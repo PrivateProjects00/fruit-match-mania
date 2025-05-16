@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fruit Match Mania 🍓🍊</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fdf6ec;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #e67e22;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(4, 100px);
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #f39c12;
+      border-radius: 12px;
+      font-size: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+
+    .card.revealed {
+      background-color: #fff;
+    }
+
+    .card.matched {
+      background-color: #2ecc71;
+      cursor: default;
+    }
+
+    #win-message {
+      margin-top: 20px;
+      font-size: 24px;
+      color: #27ae60;
+    }
+
+    #move-counter {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #34495e;
+    }
+
+    #restart-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #restart-button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fruit Match Mania 🍓🍊</h1>
+  <div id="game-board"></div>
+  <div id="move-counter">Moves: 0</div>
+  <div id="win-message"></div>
+  <button id="restart-button">🔁 Restart Game</button>
+
+  <script>
+    const board = document.getElementById('game-board');
+    const moveCounter = document.getElementById('move-counter');
+    const winMessage = document.getElementById('win-message');
+    const restartButton = document.getElementById('restart-button');
+
+    let firstCard, secondCard, lock, matchedPairs, moves, fruits, deck;
+
+    function initializeGame() {
+      board.innerHTML = '';
+      winMessage.innerText = '';
+      restartButton.style.display = 'none';
+      firstCard = null;
+      secondCard = null;
+      lock = false;
+      matchedPairs = 0;
+      moves = 0;
+      moveCounter.innerText = 'Moves: 0';
+
+      fruits = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍒', '🥝', '🍊'];
+      deck = [...fruits, ...fruits].sort(() => 0.5 - Math.random());
+
+      deck.forEach((fruit, index) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.fruit = fruit;
+        card.dataset.index = index;
+        card.innerText = '';
+        board.appendChild(card);
+      });
+    }
+
+    board.addEventListener('click', (e) => {
+      const card = e.target;
+      if (!card.classList.contains('card') || card.classList.contains('revealed') || lock) return;
+
+      card.classList.add('revealed');
+      card.innerText = card.dataset.fruit;
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        secondCard = card;
+        lock = true;
+        moves++;
+        moveCounter.innerText = `Moves: ${moves}`;
+
+        setTimeout(() => {
+          if (firstCard.dataset.fruit === secondCard.dataset.fruit) {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            matchedPairs++;
+
+            if (matchedPairs === fruits.length) {
+              let rating = '';
+              if (moves <= 16) {
+                rating = 'Excellent! 🥇';
+              } else if (moves <= 24) {
+                rating = 'Great job! 🥈';
+              } else {
+                rating = 'Keep trying! 🥉';
+              }
+
+              winMessage.innerText = `You won in ${moves} moves. ${rating}`;
+              restartButton.style.display = 'inline-block';
+            }
+          } else {
+            firstCard.classList.remove('revealed');
+            secondCard.classList.remove('revealed');
+            firstCard.innerText = '';
+            secondCard.innerText = '';
+          }
+
+          firstCard = null;
+          secondCard = null;
+          lock = false;
+        }, 800);
+      }
+    });
+
+    restartButton.addEventListener('click', () => {
+      initializeGame();
+    });
+
+    initializeGame();
+  </script>
+</body>
+</html>
